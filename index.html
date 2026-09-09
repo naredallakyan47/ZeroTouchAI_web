@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZeroTouch — Control your OS with a wave</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #08090B;
+    --bg-panel: #111318;
+    --bg-panel-hi: #161923;
+    --border: #22252E;
+    --border-hi: #33394A;
+    --text: #EDEFF2;
+    --text-muted: #8A909C;
+    --text-dim: #565C68;
+    --accent: #5CE1E6;
+    --accent-dim: #2B6E72;
+    --accent-warm: #FF6B52;
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html{ scroll-behavior:smooth; }
+
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--font-body);
+    line-height:1.6;
+    overflow-x:hidden;
+    background-image:
+      radial-gradient(circle at 15% 8%, rgba(92,225,230,0.06), transparent 40%),
+      radial-gradient(circle at 85% 25%, rgba(255,107,82,0.04), transparent 35%);
+  }
+
+  a{ color:inherit; text-decoration:none; }
+
+  .wrap{ max-width:1120px; margin:0 auto; padding:0 32px; }
+
+  ::selection{ background:var(--accent); color:#06070A; }
+
+  a:focus-visible, button:focus-visible{
+    outline:2px solid var(--accent);
+    outline-offset:3px;
+  }
+
+  /* ---------- NAV ---------- */
+  header{
+    position:sticky; top:0; z-index:50;
+    backdrop-filter:blur(10px);
+    background:rgba(8,9,11,0.75);
+    border-bottom:1px solid var(--border);
+  }
+  nav{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 32px;
+    max-width:1120px; margin:0 auto;
+  }
+  .logo{
+    display:flex; align-items:center; gap:10px;
+    font-family:var(--font-display); font-weight:700; font-size:19px;
+    letter-spacing:-0.02em;
+  }
+  .logo-mark{
+    width:22px; height:22px; position:relative;
+  }
+  .logo-mark span{
+    position:absolute; width:5px; height:5px; border-radius:50%;
+    background:var(--accent);
+    box-shadow:0 0 8px rgba(92,225,230,0.9);
+  }
+  .badge{
+    font-family:var(--font-mono); font-size:11px; color:var(--accent);
+    border:1px solid var(--accent-dim); background:rgba(92,225,230,0.06);
+    padding:3px 8px; border-radius:20px; margin-left:6px; font-weight:500;
+  }
+  .nav-links{ display:flex; align-items:center; gap:32px; }
+  .nav-links a{ font-size:14px; color:var(--text-muted); transition:color .2s; }
+  .nav-links a:hover{ color:var(--text); }
+  .nav-cta{
+    font-family:var(--font-mono);
+    font-size:13px; padding:8px 16px; border-radius:8px;
+    background:var(--text); color:var(--bg) !important;
+    font-weight:600;
+  }
+  .nav-links-mobile{ display:none; }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position:relative;
+    padding:96px 32px 60px;
+    display:grid; grid-template-columns:1.1fr 0.9fr; gap:40px; align-items:center;
+    max-width:1120px; margin:0 auto;
+  }
+  .eyebrow{
+    font-family:var(--font-mono); font-size:12.5px; color:var(--accent);
+    letter-spacing:0.12em; text-transform:uppercase;
+    display:flex; align-items:center; gap:8px; margin-bottom:22px;
+  }
+  .eyebrow::before{
+    content:''; width:7px; height:7px; border-radius:50%;
+    background:var(--accent); box-shadow:0 0 10px rgba(92,225,230,0.9);
+    animation:pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:0.35;} }
+
+  h1{
+    font-family:var(--font-display); font-weight:700;
+    font-size:clamp(34px, 4.6vw, 54px);
+    line-height:1.05; letter-spacing:-0.02em;
+    margin-bottom:22px;
+  }
+  h1 .hl{ color:var(--accent); }
+
+  .hero p.sub{
+    font-size:16.5px; color:var(--text-muted); max-width:460px; margin-bottom:34px;
+  }
+
+  .cta-row{ display:flex; gap:14px; flex-wrap:wrap; }
+  .btn{
+    font-family:var(--font-mono); font-size:14px; font-weight:500;
+    padding:13px 22px; border-radius:9px; display:inline-flex; align-items:center; gap:8px;
+    transition:transform .15s ease, box-shadow .15s ease, background .15s ease;
+    border:1px solid transparent; cursor:pointer;
+  }
+  .btn-primary{
+    background:var(--accent); color:#05191A; font-weight:600;
+  }
+  .btn-primary:hover{ transform:translateY(-1px); box-shadow:0 8px 24px rgba(92,225,230,0.25); }
+  .btn-ghost{
+    background:transparent; border:1px solid var(--border-hi); color:var(--text);
+  }
+  .btn-ghost:hover{ border-color:var(--accent); color:var(--accent); }
+
+  /* hand tracking visual */
+  .hand-stage{
+    position:relative; height:420px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .scan-rings{
+    position:absolute; inset:0; width:100%; height:100%; max-width:380px; margin:auto;
+    pointer-events:none;
+  }
+  .scan-ring{
+    stroke:var(--border-hi); stroke-width:1; fill:none; stroke-dasharray:2 6;
+    animation:spin 40s linear infinite;
+    transform-origin:center;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  .hand-img{
+    position:relative; z-index:2;
+    max-width:300px; width:80%; height:auto;
+    filter:drop-shadow(0 0 30px rgba(92,225,230,0.18));
+    will-change:transform;
+  }
+
+  .readout-overlay{
+    position:absolute; inset:0; max-width:380px; margin:auto; z-index:3;
+    pointer-events:none;
+  }
+  .readout{
+    position:absolute;
+    font-family:var(--font-mono); font-size:10.5px; color:var(--text-dim);
+    letter-spacing:0.02em;
+  }
+  .readout.live{ color:var(--accent); }
+  .readout.top-left{ top:8px; left:8px; }
+  .readout.top-right{ top:8px; right:8px; }
+  .readout.bottom-left{ bottom:8px; left:8px; }
+
+  /* ---------- PIPELINE ---------- */
+  .section-label{
+    font-family:var(--font-mono); font-size:12px; color:var(--accent);
+    text-transform:uppercase; letter-spacing:0.12em; margin-bottom:12px;
+    display:block;
+  }
+  .pipeline{ padding:100px 32px; border-top:1px solid var(--border); }
+  .pipeline h2{
+    font-family:var(--font-display); font-size:clamp(24px,3vw,32px); font-weight:600;
+    margin-bottom:56px; max-width:520px; letter-spacing:-0.01em;
+  }
+  .pipeline-grid{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:1px;
+    background:var(--border); border:1px solid var(--border); border-radius:14px; overflow:hidden;
+  }
+  .pipe-card{ background:var(--bg-panel); padding:34px 28px; position:relative; }
+  .pipe-num{
+    font-family:var(--font-mono); font-size:12px; color:var(--text-dim);
+    margin-bottom:22px;
+  }
+  .pipe-card h3{
+    font-family:var(--font-display); font-size:18px; margin-bottom:10px; font-weight:600;
+  }
+  .pipe-card p{ font-size:14px; color:var(--text-muted); }
+  .pipe-card::after{
+    content:''; position:absolute; top:0; left:0; width:0; height:2px;
+    background:var(--accent); transition:width .4s ease;
+  }
+  .pipe-card:hover::after{ width:100%; }
+
+  /* ---------- TERMINAL ---------- */
+  .terminal-section{ padding:20px 32px 100px; }
+  .terminal{
+    background:#0C0E12; border:1px solid var(--border-hi); border-radius:12px;
+    max-width:720px; margin:0 auto; overflow:hidden;
+    box-shadow:0 30px 80px rgba(0,0,0,0.5);
+  }
+  .terminal-bar{
+    display:flex; align-items:center; gap:8px;
+    padding:12px 16px; border-bottom:1px solid var(--border);
+    background:var(--bg-panel);
+  }
+  .dot{ width:10px; height:10px; border-radius:50%; }
+  .dot.r{ background:#FF5F57; } .dot.y{ background:#FEBC2E; } .dot.g{ background:#28C840; }
+  .terminal-title{
+    font-family:var(--font-mono); font-size:12px; color:var(--text-dim); margin-left:6px;
+  }
+  .terminal-body{
+    padding:24px 20px; font-family:var(--font-mono); font-size:13.5px; min-height:120px;
+  }
+  .terminal-body .prompt{ color:var(--accent); }
+  .terminal-body .cmd{ color:var(--text); }
+  .terminal-body .out{ color:var(--text-dim); }
+  #typed-cmd::after{
+    content:'▌'; color:var(--accent); animation:blink 1s step-end infinite; margin-left:2px;
+  }
+  @keyframes blink{ 50%{ opacity:0; } }
+
+  /* ---------- DOWNLOADS ---------- */
+  .downloads{ padding:20px 32px 110px; border-top:1px solid var(--border); }
+  .downloads-head{
+    text-align:center; max-width:520px; margin:0 auto 52px;
+  }
+  .downloads-head h2{
+    font-family:var(--font-display); font-size:clamp(24px,3vw,32px); font-weight:600; letter-spacing:-0.01em;
+  }
+  .os-grid{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:18px; max-width:1120px; margin:0 auto;
+  }
+  .os-card{
+    background:var(--bg-panel); border:1px solid var(--border); border-radius:14px;
+    padding:30px 26px; transition:border-color .2s, transform .2s;
+  }
+  .os-card:not(.disabled):hover{ border-color:var(--border-hi); transform:translateY(-3px); }
+  .os-card.disabled{ opacity:0.55; }
+  .os-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+  .os-icon{ width:30px; height:30px; color:var(--text); }
+  .soon-tag{
+    font-family:var(--font-mono); font-size:10.5px; color:var(--accent-warm);
+    border:1px solid rgba(255,107,82,0.35); background:rgba(255,107,82,0.08);
+    padding:3px 8px; border-radius:20px; letter-spacing:0.04em;
+  }
+  .os-card h3{ font-family:var(--font-display); font-size:19px; margin-bottom:6px; }
+  .os-card .ver{ font-family:var(--font-mono); font-size:12px; color:var(--text-dim); margin-bottom:20px; }
+  .install-line{
+    font-family:var(--font-mono); font-size:12px; color:var(--text-muted);
+    background:#0C0E12; border:1px solid var(--border); border-radius:8px;
+    padding:10px 12px; margin-bottom:16px; overflow-x:auto; white-space:nowrap;
+  }
+  .install-line .p{ color:var(--accent); }
+  .os-dl-btn{
+    width:100%; text-align:center; font-family:var(--font-mono); font-size:13px; font-weight:600;
+    padding:11px; border-radius:8px; background:var(--text); color:var(--bg); display:block;
+    transition:opacity .2s;
+  }
+  .os-card.disabled .os-dl-btn{
+    background:transparent; border:1px solid var(--border-hi); color:var(--text-dim); cursor:not-allowed;
+  }
+  .os-dl-btn:not(.na):hover{ opacity:0.85; }
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    border-top:1px solid var(--border); padding:32px;
+  }
+  .footer-inner{
+    max-width:1120px; margin:0 auto; display:flex; justify-content:space-between; align-items:center;
+    font-size:13px; color:var(--text-dim);
+  }
+  .footer-links{ display:flex; gap:24px; }
+  .footer-links a{ color:var(--text-dim); transition:color .2s; }
+  .footer-links a:hover{ color:var(--text-muted); }
+
+  @media (max-width: 860px){
+    .hero{ grid-template-columns:1fr; padding-top:64px; }
+    .hand-stage{ height:300px; order:-1; }
+    .pipeline-grid{ grid-template-columns:1fr; }
+    .os-grid{ grid-template-columns:1fr; }
+    .nav-links{ display:none; }
+    .footer-inner{ flex-direction:column; gap:14px; text-align:center; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <nav>
+    <div class="logo">
+      <div class="logo-mark">
+        <span style="top:2px; left:8px;"></span>
+        <span style="top:9px; left:2px;"></span>
+        <span style="top:9px; left:14px;"></span>
+        <span style="top:16px; left:8px;"></span>
+      </div>
+      ZeroTouch <span class="badge">v0.4 beta</span>
+    </div>
+    <div class="nav-links">
+      <a href="#pipeline">How it works</a>
+      <a href="#downloads">Download</a>
+      <a href="#">Docs</a>
+    </div>
+  </nav>
+</header>
+
+<section class="hero">
+  <div>
+    <div class="eyebrow">Live gesture engine · running locally</div>
+    <h1>Control your computer <span class="hl">without touching it.</span></h1>
+    <p class="sub">ZeroTouch reads your hand through any webcam and turns gestures into real OS actions — volume, windows, media, scrolling — with sub‑20ms latency and nothing sent to the cloud.</p>
+    <div class="cta-row">
+      <a href="#downloads" class="btn btn-primary">Get ZeroTouch →</a>
+      <a href="#pipeline" class="btn btn-ghost">See how it works</a>
+    </div>
+  </div>
+
+  <div class="hand-stage" id="hand-stage">
+    <svg class="scan-rings" viewBox="0 0 300 300">
+      <circle class="scan-ring" cx="150" cy="150" r="148"></circle>
+      <circle class="scan-ring" cx="150" cy="150" r="114" style="animation-direction:reverse; animation-duration:55s;"></circle>
+    </svg>
+
+    <img src="hand.png" alt="Hand gesture being tracked" class="hand-img" id="hand-img">
+
+    <div class="readout-overlay">
+      <span class="readout live top-left" id="status-text">TRACKING · 21 pts</span>
+      <span class="readout top-right" id="conf-text">98% conf.</span>
+      <span class="readout bottom-left">GESTURE: <span id="gesture-text">OPEN_PALM</span></span>
+    </div>
+  </div>
+</section>
+
+<section class="pipeline" id="pipeline">
+  <div class="wrap">
+    <span class="section-label">Pipeline</span>
+    <h2>Three steps between your hand and your OS — all of them on-device.</h2>
+    <div class="pipeline-grid">
+      <div class="pipe-card">
+        <div class="pipe-num">01 / capture</div>
+        <h3>Read the frame</h3>
+        <p>Your webcam feeds ZeroTouch at 60fps. No footage is stored or uploaded — frames are discarded the instant they're processed.</p>
+      </div>
+      <div class="pipe-card">
+        <div class="pipe-num">02 / interpret</div>
+        <h3>Map the landmarks</h3>
+        <p>A lightweight on-device model tracks 21 points per hand and classifies the pose against your gesture library in real time.</p>
+      </div>
+      <div class="pipe-card">
+        <div class="pipe-num">03 / act</div>
+        <h3>Trigger the action</h3>
+        <p>Matched gestures fire native OS events — media keys, window snapping, scroll, custom shortcuts — through a signed system driver.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="terminal-section">
+  <div class="terminal">
+    <div class="terminal-bar">
+      <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+      <div class="terminal-title">zsh — zerotouch install</div>
+    </div>
+    <div class="terminal-body">
+      <div><span class="prompt">$</span> <span class="cmd" id="typed-cmd"></span></div>
+      <div class="out" id="terminal-out" style="margin-top:10px; opacity:0;"></div>
+    </div>
+  </div>
+</section>
+
+<section class="downloads" id="downloads">
+  <div class="downloads-head">
+    <span class="section-label">Download</span>
+    <h2>Pick your OS, run one line, wave hello.</h2>
+  </div>
+  <div class="os-grid">
+
+    <div class="os-card">
+      <div class="os-top">
+        <svg class="os-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12.5 2c-1.5 0-2.7 1.4-2.7 3.1 0 1.1.4 1.9.9 2.6-1.6.9-2.9 3-3.6 5-.6.1-1.7.5-1.7 1.8 0 .8.5 1.3.5 1.3s-1.1.3-1.1 1.5c0 .9.7 1.4 1.3 1.6-.1.3-.2.7-.2 1.1 0 1.7 2.1 2.8 4.5 2.8.7 0 1.3-.1 1.9-.3.5.4 1.2.7 2.1.7.9 0 1.6-.3 2.1-.7.6.2 1.2.3 1.9.3 2.4 0 4.5-1.1 4.5-2.8 0-.4-.1-.8-.2-1.1.6-.2 1.3-.7 1.3-1.6 0-1.2-1.1-1.5-1.1-1.5s.5-.5.5-1.3c0-1.3-1.1-1.7-1.7-1.8-.7-2-2-4.1-3.6-5 .5-.7.9-1.5.9-2.6C15.2 3.4 14 2 12.5 2z"/></svg>
+        <span class="ver">Kernel driver · deb / rpm / arch</span>
+      </div>
+      <h3>Linux</h3>
+      <div class="install-line"><span class="p">$</span> curl -fsSL zerotouch.dev/install.sh | bash</div>
+      <a href="https://github.com/naredallakyan47/ZeroTouch/releases/download/v1.0.0/ZeroTouch_Beta.AppImage" class="os-dl-btn" target="_blank" rel="noopener">Download AppImage</a>
+    </div>
+
+    <div class="os-card">
+      <div class="os-top">
+        <svg class="os-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.1 10.3 4v7.3H3V5.1zm8.1-1.2L21 2.5v8.8h-9.9V3.9zM3 12.4h7.3V19L3 17.9v-5.5zm8.1 0H21V21l-9.9-1.4v-7.2z"/></svg>
+        <span class="ver">x64 / arm64 · signed installer</span>
+      </div>
+      <h3>Windows</h3>
+      <div class="install-line"><span class="p">PS ></span> irm zerotouch.dev/install.ps1 | iex</div>
+      <a href="#" class="os-dl-btn">Download .exe</a>
+    </div>
+
+    <div class="os-card disabled">
+      <div class="os-top">
+        <svg class="os-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M16.4 1.4c.1 1.1-.3 2.2-1 3-.7.8-1.9 1.5-3 1.4-.1-1.1.4-2.2 1.1-3 .7-.8 1.9-1.4 2.9-1.4zM20.6 17.1c-.5 1.2-.8 1.7-1.5 2.7-1 1.4-2.3 3.2-4 3.2-1.5 0-1.9-1-3.9-1s-2.5 1-4 1c-1.7.1-3-1.9-4-3.3-2.7-3.9-3-8.5-1.3-10.9 1.2-1.7 3-2.7 4.7-2.7 1.7 0 2.8 1 4.2 1 1.4 0 2.2-1 4.2-1 1.5 0 3.1.8 4.2 2.2-3.7 2-3.1 7.2 1.4 8.7z"/></svg>
+        <span class="soon-tag">SOON</span>
+      </div>
+      <h3>macOS</h3>
+      <div class="install-line"><span class="p">$</span> brew install zerotouch</div>
+      <a href="#" class="os-dl-btn na" tabindex="-1" aria-disabled="true">Notify me</a>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <span>© 2026 ZeroTouch — gestures, not clicks.</span>
+    <div class="footer-links">
+      <a href="#">GitHub</a>
+      <a href="#">Docs</a>
+      <a href="#">Privacy</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const cmdText = "curl -fsSL zerotouch.dev/install.sh | bash";
+  const outText = "→ Detecting platform: linux-x64\n→ Installing camera bridge... done\n→ ZeroTouch is ready. Try opening your palm.";
+  const cmdEl = document.getElementById('typed-cmd');
+  const outEl = document.getElementById('terminal-out');
+  let i = 0;
+  function typeCmd(){
+    if(i <= cmdText.length){
+      cmdEl.textContent = cmdText.slice(0, i);
+      i++;
+      setTimeout(typeCmd, 32);
+    } else {
+      setTimeout(()=>{
+        outEl.style.transition = 'opacity .6s ease';
+        outEl.style.opacity = 1;
+        outEl.style.whiteSpace = 'pre-line';
+        outEl.textContent = outText;
+      }, 400);
+    }
+  }
+  setTimeout(typeCmd, 700);
+
+  const gestures = ["OPEN_PALM","PINCH","SWIPE_LEFT","FIST","POINT","SWIPE_RIGHT"];
+  const gestureEl = document.getElementById('gesture-text');
+  let gi = 0;
+  setInterval(()=>{
+    gi = (gi + 1) % gestures.length;
+    gestureEl.textContent = gestures[gi];
+  }, 1800);
+
+  const stage = document.querySelector('.hand-stage');
+  const handImg = document.getElementById('hand-img');
+  stage.addEventListener('mousemove', (e) => {
+    const rect = stage.getBoundingClientRect();
+    const mx = (e.clientX - rect.left - rect.width/2) / rect.width;
+    const my = (e.clientY - rect.top - rect.height/2) / rect.height;
+    handImg.style.transform = `rotate(${mx*3}deg) translate(${mx*8}px, ${my*8}px)`;
+    handImg.style.transition = 'transform .3s ease-out';
+  });
+  stage.addEventListener('mouseleave', () => {
+    handImg.style.transform = 'rotate(0deg) translate(0,0)';
+  });
+
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.querySelectorAll('.scan-ring, .eyebrow::before').forEach(el => el.style.animation = 'none');
+  }
+</script>
+
+</body>
+</html>
