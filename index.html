@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ZeroTouch — Control your OS with a wave</title>
+  <link rel="icon" href="icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -49,6 +50,7 @@
     outline-offset:3px;
   }
 
+  /* ---------- NAV ---------- */
   header{
     position:sticky; top:0; z-index:50;
     backdrop-filter:blur(10px);
@@ -135,7 +137,6 @@
   }
   .btn-ghost:hover{ border-color:var(--accent); color:var(--accent); }
 
-  /* hand tracking visual */
   .hand-stage{
     position:relative; height:420px;
     display:flex; align-items:center; justify-content:center;
@@ -392,10 +393,12 @@
       <a href="https://github.com/naredallakyan47/ZeroTouch/releases/download/v1.0.0/ZeroTouch_Beta.AppImage" class="os-dl-btn" target="_blank" rel="noopener">Download AppImage</a>
     </div>
 
-    <div class="os-card">
+
+
+    <div class="os-card disabled">
       <div class="os-top">
         <svg class="os-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.1 10.3 4v7.3H3V5.1zm8.1-1.2L21 2.5v8.8h-9.9V3.9zM3 12.4h7.3V19L3 17.9v-5.5zm8.1 0H21V21l-9.9-1.4v-7.2z"/></svg>
-        <span class="ver">x64 / arm64 · signed installer</span>
+        <span class="soon-tag">SOON</span>
       </div>
       <h3>Windows</h3>
       <div class="install-line"><span class="p">PS ></span> irm zerotouch.dev/install.ps1 | iex</div>
